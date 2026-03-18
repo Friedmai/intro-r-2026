@@ -1,0 +1,22 @@
+---
+title: "Intro to R 2026"
+format: html
+author: "FRIEDMAI"
+date: 2026-03-18
+editor: visual
+---
+
+##Intro
+
+```{r}
+3
+4
+5
+typeof(9000)
+```
+
+
+```{r}
+"text goes in quotes"
+```
+
