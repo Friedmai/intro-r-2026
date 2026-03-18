@@ -18,5 +18,21 @@ typeof(9000)
 
 ```{r}
 "text goes in quotes"
+typeof("strings")
+```
+
+```{r}
+a <- c(1,2,3)
+a
+c(1, "two", 3)
+typeof(1)
+```
+
+```{r}
+my_list <- list(number = c(1,2,3), words = c("one","two"))
+                str(my_list)
+```
+```{r}
+
 ```
 
