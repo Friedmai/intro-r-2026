@@ -33,6 +33,12 @@ my_list <- list(number = c(1,2,3), words = c("one","two"))
                 str(my_list)
 ```
 ```{r}
+#| label: setup
+source("training_source.R")
+```
 
+```{r}
+csv_path <- "../data/raw/presurvey_20260317.csv"
+survey_raw <- rio::import(csv_path)
 ```
 
