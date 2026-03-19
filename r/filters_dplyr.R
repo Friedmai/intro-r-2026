@@ -27,7 +27,7 @@ speed_vol <- clean_df |>
   geom_point()
 speed_vol
 
-#another version, now with filters
+#another version, now with filters (best version)
 speed_occ <- clean_df |> 
   filter(detector_id < 101100) |> 
   filter(speed > 40) |>
@@ -37,10 +37,9 @@ speed_occ
 
 #another version, different graphs type (geom)
 speed_occ <- clean_df |> 
-  filter(detector_id < 101100) |> 
-  filter(speed > 40) |>
-  ggplot(aes(x = starttime, y = speed, colour = as.factor(detector_id))) +
-  geom_line()
+  filter(detector_id == 100900) |> 
+  ggplot(aes(x = speed, y = starttime)) +
+  geom_point()
 speed_occ
 
 #another version, now with ability to click plot points using plotly

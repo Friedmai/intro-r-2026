@@ -1,0 +1,63 @@
+---
+title: "New"
+format: html
+editor: visual
+---
+
+## reinstall packages and import survey data
+
+```{r}
+#| label: setup
+source("training_source.R")
+```
+
+```{r}
+#| label: import_survey
+csv_path <- "../data/raw/presurvey_20260317.csv"
+survey_raw <- rio::import(csv_path)
+```
+
+```{r}
+
+survey <- survey_raw |> 
+  clean_names()
+glimpse(survey)
+```
+##rename columns
+
+```{r}
+survey <- survey_raw |> 
+  clean_names() |> 
+  rename (os = what_operating_system_are_you_using_for_this_workshop, 
+          prior = which_of_the_following_are_true_regarding_your_experiences_with_r_prior_to_this_workshop,
+          r_hope = 
+            what_do_you_hope_to_use_r_for_in_the_future,
+          commute_time = what_is_the_approximate_travel_time_for_your_morning_commute_to_psu,
+          distance = 
+            how_far_will_you_likely_travel
+            )
+glimpse(survey)
+```
+```{r}
+survey2 <- survey |> 
+  mutate(commute_digits = str_extract(commute_time, "[0-9]+"),
+         distance_digits = str_extract(distance, "[0-9]|\\.+"),
+         commute_min = as.numeric(commute_digits),
+         distance_mi = as.numeric(distance_digits),
+         travel_mph = if_else (!is.na(commute_min) & commute_min > 0,
+                               distance_mi / commute_min * 60, NA_real_),
+         os = str_to_lower(os),
+         os_family = case_when(str_detect(os, "win") ~ "Windows",
+                               str_detect(os,"mac") ~ "Mac",
+                               TRUE ~ "Other"
+           
+        
+    
+  )
+  )
+
+survey3 <- survey2 |> 
+  select(os, os_family)
+head(survey3)
+```
+
