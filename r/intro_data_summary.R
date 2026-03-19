@@ -37,7 +37,23 @@ occ_20plus <- raw_15min |>
   # the end of line 34 is the "pipe". can also do %>%, also with ctrl+shift+m
 
 #multiple filters
-
 occ10_spd80 <- raw_15min |> 
   filter(occupancy < 10 & speed > 80)
 table(occ10_spd80$detector_id) # this table function shows how many times each value appears in stated column
+
+# working with NA values
+na_example <- raw_15min |> 
+  filter(is.na(speed))
+
+complete_df <- raw_15min |> 
+  filter(!is.na(speed)) #weirdly, not NA is expressed as: !is.na
+
+subset_o10s80 <- occ10_spd80 |> 
+  filter(detector_id %in% c(101185, 101176)) # in here works like SQL
+
+#filtering for blanks
+blank_example <- raw_15min |> 
+  filter(speed == " ")
+
+saveRDS(complete_df, "data/clean_data.rds") #rds is a compressed data format specific for r; use this if you're not moving the object out of r
+
