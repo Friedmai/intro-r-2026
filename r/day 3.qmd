@@ -1,0 +1,114 @@
+---
+title: "New"
+format: html
+editor: visual
+---
+
+## reinstall packages and import survey data
+
+```{r}
+#| label: setup
+source("training_source.R")
+```
+
+```{r}
+#| label: import_survey
+csv_path <- "../data/raw/presurvey_20260317.csv"
+survey_raw <- rio::import(csv_path)
+```
+
+```{r}
+
+survey <- survey_raw |> 
+  clean_names()
+glimpse(survey)
+```
+
+##rename columns
+
+```{r}
+survey <- survey_raw |>
+  clean_names() |>
+  rename(os = what_operating_system_are_you_using_for_this_workshop,
+         prior_exp = which_of_the_following_are_true_regarding_your_experiences_with_r_prior_to_this_workshop,
+         r_hope = what_do_you_hope_to_use_r_for_in_the_future,
+         trevel_mode = the_workshop_will_be_held_on_the_psu_campus_what_is_your_intended_mode_of_travel_to_the_workshop_check_all_that_apply,
+         travel_direct = do_you_intend_to_travel_directly_from_home_to_the_workshop,
+         distance = how_far_will_you_likely_travel,
+         commute_time = what_is_the_approximate_travel_time_for_your_morning_commute_to_psu,
+         drink = what_is_your_morning_drink_of_choice,
+         movie_quote = what_is_the_first_movie_quote_that_comes_to_mind,
+         pinepple_ok = pineapple_is_an_acceptable_pizza_topping)
+
+glimpse(survey)
+```
+
+```{r}
+survey2 <- survey |> 
+  mutate(commute_digits = str_extract(commute_time, "[0-9]+"),
+         distance_digits = str_extract(distance, "[0-9]|\\.+"),
+         commute_min = as.numeric(commute_digits),
+         distance_mi = as.numeric(distance_digits),
+         travel_mph = if_else (!is.na(commute_min) & commute_min > 0,
+                               distance_mi / commute_min * 60,
+                               NA_real_),
+         os = str_to_lower(os),
+         os_family = case_when(str_detect(os, "win") ~ "Windows",
+                               str_detect(os,"mac") ~ "Mac",
+                               TRUE ~ "Other"
+  )
+  )
+
+glimpse(survey2)
+
+survey3 <- survey2 |> 
+  select(os, os_family)
+head(survey3)
+```
+#clean up list data with incosistent formatting
+
+```{r}
+num_dict_words <- paste(textclean::replace_number(seq_len(100)), collapse= "|")
+
+text_num_tbl <- tibble(num = seq_len(100)) |> #create a table that matches word and number formats
+  mutate(
+    word = textclean::replace_number(num),
+    word_num = as.character(num)
+  ) |> 
+  select(word, word_num)
+
+long_survey <- survey2 |> 
+  select(distance, commute_time) |> 
+  mutate(rid = row_number()) |> #adds an index to show what row data comes from
+  pivot_longer(cols = c(distance, commute_time), names_to = "num_text_var", values_to = "numeric_text") |> 
+  mutate(numeric_text = str_to_lower(numeric_text)) |> #make everything lower case for easy matching
+  filter(nchar(numeric_text) > 2) |> #interesting way to filter out blanks and NA values
+  mutate(num_words = str_extract_all(numeric_text, num_dict_words, simplify = T),
+         num_words = case_when(nchar(num_words[,1])<2 ~ NA_character_,
+                               nchar(num_words[,2])>2 ~ 
+                                 paste(num_words[,1], num_words[,2], sep = "-"),
+                               TRUE ~ num_words[,1])
+ #this case_when creates the conditions for where you use replacement text         
+         ) |> 
+  left_join(select(text_num_tbl, word, word_num), by = c("num_words" = "word")) |>  
+  #now those outlier values are converted to number format
+  mutate(num_raw = case_when(!is.na(word_num) ~ word_num,
+                             str_detect(numeric_text, "\\ban\\b") ~ "1", #accounts for "an" convert to 1
+                             T ~ numeric_text),
+         num = parse_number(num_raw)
+         
+         )
+         
+
+```
+
+```{r}
+wide_survey <- long_survey |>
+  pivot_wider(
+    id_cols = .rid,
+    names_from = num_text_var, 
+    values_from = numeric_text, 
+    names_repair = "minimal") |> 
+  select(-.rid)
+```
+

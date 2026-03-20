@@ -8,6 +8,7 @@ pkgs <- c(
   "stringr",    # string utilities
   "janitor",    # clean_names(), tabyl(), etc.
   "scales",     # percent_format and friends
+  "textclean",
   "tidycensus"  # ACS API wrapper (optional bonus section)
 )
 
