@@ -1,6 +1,9 @@
 #load libraries
 
-library(tidyr, dplyr, lubridate)
+library(tidyr) 
+library(dplyr)
+library(lubridate)
+library(ggplot2)
 
 #load in data
 
@@ -45,9 +48,30 @@ stations_df <- clean_df |>
 #view the structure of what we just made above
 str(stations_df)
 
+#create line graph of total volume by date at one station
 sta_1059 <- stations_df |> 
-  filter(stationid == 1059) |> 
+  filter(stationid == 1059) |> #just looking at one station to make data cleaner
+  right_join(starttime_seq, by = "starttime") |>  #can do just the by = because column names are the same
   ggplot(aes(x = starttime, y = tot_volume)) +
-  geom_line() + 
-  geom_point()
+  geom_line(color = "skyblue") + 
+  geom_point(color = "darkblue") +
+  scale_x_datetime(
+    date_breaks = "1 day",
+    date_labels = "%Y-%m-%d",
+    guide = guide_axis(angle = 45)
+  ) +
+  xlab(NULL) +
+  theme_bw() +
+  geom_hline(yintercept = mean(stations_df$tot_volume),
+             color = 'orange')
 sta_1059
+
+#how to address gaps in time data
+
+starttime_seq <- seq(
+  from = ymd_hms("2026-02-01 00:00:00", tz = "US/Pacific"),
+  to = ymd_hms("2026-02-16 00:00:00", tz = "US/Pacific"),
+  by = "15 min"
+) |> 
+  as.data.frame()
+colnames(starttime_seq) <- c("starttime")
