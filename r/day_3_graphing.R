@@ -48,7 +48,7 @@ stations_df <- clean_df |>
 #view the structure of what we just made above
 str(stations_df)
 
-#create line graph of total volume by date at one station
+#create line graph of total volume by date at one station; right join to the starttime_seq data to remove the gaps
 sta_1059 <- stations_df |> 
   filter(stationid == 1059) |> #just looking at one station to make data cleaner
   right_join(starttime_seq, by = "starttime") |>  #can do just the by = because column names are the same
@@ -75,3 +75,25 @@ starttime_seq <- seq(
 ) |> 
   as.data.frame()
 colnames(starttime_seq) <- c("starttime")
+
+#create a function
+figure_function <- function(stid,measure){
+  sta_1059 <- stations_df |> 
+    filter(stationid == stid) |> #just looking at one station to make data cleaner
+    right_join(starttime_seq, by = "starttime") |>  #can do just the by = because column names are the same
+    ggplot(aes(x = starttime, y = {{measure}})) +
+    geom_line(color = "skyblue") + 
+    geom_point(color = "darkblue") +
+    scale_x_datetime(
+      date_breaks = "1 day",
+      date_labels = "%Y-%m-%d",
+      guide = guide_axis(angle = 45)
+    ) +
+    xlab(NULL) +
+    theme_bw() +
+    geom_hline(yintercept = mean(stations_df$tot_volume),
+               color = 'orange')
+  sta_1059
+}
+
+figure_function(3142, mean_speed)
