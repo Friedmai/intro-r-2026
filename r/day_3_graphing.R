@@ -90,10 +90,16 @@ figure_function <- function(stid,measure){
       guide = guide_axis(angle = 45)
     ) +
     xlab(NULL) +
-    theme_bw() +
-    geom_hline(yintercept = mean(stations_df$tot_volume),
-               color = 'orange')
+    theme_bw() 
   sta_1059
 }
 
 figure_function(3142, mean_speed)
+
+#we can save the above function as a separate R file; 
+#loading it through source() executes the code in that file (so we don't need to rewrite the source)
+source("figure_function.R") 
+#now that it's loaded, you can run the function below without setting it up in current R file
+figure_function(10755, mean_occ)
+
+
